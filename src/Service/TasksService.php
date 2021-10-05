@@ -26,9 +26,8 @@ class TasksService
     }
 
 
-    public function getTasksArray(): array
+    public function getTasksArray(\DateTime $end): array
     {
-        $end = new \DateTime();
         $start = clone $end;
         $start->modify('-1 day');
 
