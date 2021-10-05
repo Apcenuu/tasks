@@ -5,7 +5,10 @@ namespace App\Service;
 use RetailCrm\Api\Enum\ByIdentifier;
 use RetailCrm\Api\Factory\SimpleClientFactory;
 use RetailCrm\Api\Model\Entity\Tasks\Task;
+use RetailCrm\Api\Model\Filter\Customers\CustomerFilter;
+use RetailCrm\Api\Model\Filter\Tasks\TaskFilter;
 use RetailCrm\Api\Model\Request\BySiteRequest;
+use RetailCrm\Api\Model\Request\Customers\CustomersRequest;
 use RetailCrm\Api\Model\Request\Tasks\TasksRequest;
 
 class TasksService
@@ -23,28 +26,32 @@ class TasksService
     }
 
 
-    public function getTasksArray()
+    public function getTasksArray(): array
     {
-        $tasks = $this->getTasks();
+        $end = new \DateTime();
+        $start = clone $end;
+        $start->modify('-1 day');
 
-        $now = new \DateTime();
-//        $now->modify('-1 day');
+        $tasks = $this->getTasks($start, $end);
+
         $rows = [];
         foreach ($tasks as $task) {
             if (!isset($task->datetime)) {
                 continue;
             }
-            if ($task->datetime->format('d') < $now->format('d')) {
-                return $rows;
-            }
 
             $row = [
                 'date' => null,
                 'task' => $task->text,
-                'customer' => $task->customer->site,
+                'commentary' => $task->commentary,
+                'customer' => null,
                 'phone' => null,
                 'performer' => null
             ];
+
+            if ($task->customer) {
+                $row['customer'] = $this->getCustomer($task);
+            }
 
             if ($task->performer) {
                 $row['performer'] = $this->getPerformer($task);
@@ -58,9 +65,8 @@ class TasksService
 
             $rows[] = $row;
 
-
-
         }
+
         return $rows;
     }
 
@@ -74,15 +80,35 @@ class TasksService
         return null;
     }
 
-    private function getTasks(): array
+    private function getTasks(\DateTime $start, \DateTime $end): array
     {
         $request = new TasksRequest();
+        $filter = new TaskFilter();
+        $filter->status = 'performing';
+
+        $filter->createdAtFrom = $start->format('Y-m-d');
+        $filter->createdAtTo = $end->format('Y-m-d');
+
+        $request->filter = $filter;
         $request->limit = 100;
+
         return $this->client->tasks->list($request)->tasks;
+    }
+
+    private function getCustomer(Task $task)
+    {
+        $request = new CustomersRequest();
+        $filter = new CustomerFilter();
+        $filter->ids = [$task->customer->id];
+        $request->filter = $filter;
+        $response = $this->client->customers->list($request);
+        $customer = array_shift($response->customers);
+        return $customer->firstName;
     }
 
     private function getPerformer(Task $task): string
     {
+        $performer = null;
         if ($task->performerType == 'group') {
             $group = $this->groupService->findGroupById($task->performer);
             $performer = $group->name;
