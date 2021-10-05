@@ -34,7 +34,7 @@ class UploadTasksCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $rows = $this->tasksService->getTasksArray();
-        $this->excelService->writeXLSX($this->projectDir . '/tasks.xlsx', $rows);
+        $this->excelService->writeXLSX($this->projectDir . '/../tasks.xlsx', $rows);
 
         return 0;
     }
