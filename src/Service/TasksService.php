@@ -29,6 +29,9 @@ class TasksService
     public function getTasksArray(\DateTime $end): array
     {
         $start = clone $end;
+        $timezone = new \DateTimeZone('Chile/EasterIsland');
+        $start->setTimezone($timezone);
+        $end->setTimezone($timezone);
 
         $start->setTime(0,0);
         $end->setTime(23,59);
