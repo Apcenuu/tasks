@@ -5,6 +5,7 @@ namespace App\Command;
 use App\Service\ExcelService;
 use App\Service\TasksService;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -31,9 +32,20 @@ class UploadTasksCommand extends Command
         $this->projectDir = $projectDir;
     }
 
+    protected function configure()
+    {
+        parent::configure();
+
+        $this->addArgument('day', InputArgument::OPTIONAL, 'Upload for day number');
+    }
+
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $end = new \DateTime();
+
+        if ($input->getArgument('day')) {
+            $end->setDate($end->format('Y'), $end->format('m'), $input->getArgument('day'));
+        }
 
         $date = clone $end;
         $rows = $this->tasksService->getTasksArray($end);
