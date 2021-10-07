@@ -29,7 +29,9 @@ class TasksService
     public function getTasksArray(\DateTime $end): array
     {
         $start = clone $end;
-        $start->modify('-1 day');
+
+        $start->setTime(0,0);
+        $end->setTime(23,59);
 
         $tasks = $this->getTasks($start, $end);
 
@@ -85,8 +87,8 @@ class TasksService
         $filter = new TaskFilter();
         $filter->status = 'performing';
 
-        $filter->createdAtFrom = $start->format('Y-m-d');
-        $filter->createdAtTo = $end->format('Y-m-d');
+        $filter->dateFrom = $start->format('Y-m-d H:i:s');
+        $filter->dateTo = $end->format('Y-m-d H:i:s');
 
         $request->filter = $filter;
         $request->limit = 100;

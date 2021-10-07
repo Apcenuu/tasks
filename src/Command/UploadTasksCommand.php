@@ -33,8 +33,10 @@ class UploadTasksCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $date = new \DateTime();
-        $rows = $this->tasksService->getTasksArray($date);
+        $end = new \DateTime();
+
+        $date = clone $end;
+        $rows = $this->tasksService->getTasksArray($end);
         $date = $date->format('d');
         $this->excelService->writeXLSX($this->projectDir . '/../tasks-'. $date .'.xlsx', $rows);
 
