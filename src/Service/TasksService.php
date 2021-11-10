@@ -21,7 +21,7 @@ class TasksService
 
     public function __construct(GroupService $groupService)
     {
-        $this->client = SimpleClientFactory::createClient('https://patronatoalpormayor.simla.com', 'DXRkUwBQd8hCIsH9aQM2U7tTc8CGOEMh');
+        $this->client = SimpleClientFactory::createClient('', '');
         $this->groupService = $groupService;
     }
 
